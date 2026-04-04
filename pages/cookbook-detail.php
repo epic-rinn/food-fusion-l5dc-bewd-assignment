@@ -133,7 +133,7 @@ $steps = array_values(array_filter(array_map('trim', explode("\n", $cookbook['de
             <!-- Like button -->
             <div class="flex items-center gap-4">
                 <button id="like-btn"
-                        onclick="toggleLike(<?= $cookbook['id'] ?>)"
+                        onclick="toggleLike(<?= (int)$cookbook['id'] ?>)"
                         class="inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-semibold transition
                                <?= $user_liked
                                    ? 'bg-red-50 text-red-500 border border-red-200 hover:bg-red-100'
@@ -283,7 +283,7 @@ $steps = array_values(array_filter(array_map('trim', explode("\n", $cookbook['de
                     ? SITE_URL . '/uploads/cookbooks/' . htmlspecialchars($rel['photo'])
                     : null;
             ?>
-            <a href="<?= SITE_URL ?>/pages/cookbook-detail.php?id=<?= $rel['id'] ?>"
+            <a href="<?= SITE_URL ?>/pages/cookbook-detail.php?id=<?= (int)$rel['id'] ?>"
                class="group bg-white border border-gray-100 rounded-2xl overflow-hidden hover:shadow-lg transition-all duration-200">
                 <div class="aspect-video overflow-hidden bg-gray-100">
                     <?php if ($rel_photo): ?>
@@ -363,7 +363,7 @@ if (commentForm) {
         fetch('<?= SITE_URL ?>/auth/cookbooks/comment.php', {
             method: 'POST',
             headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-            body: 'cookbook_id=<?= $cookbook['id'] ?>&comment=' + encodeURIComponent(comment)
+            body: 'cookbook_id=<?= (int)$cookbook['id'] ?>&comment=' + encodeURIComponent(comment)
         })
         .then(r => {
             if (r.status === 401) {

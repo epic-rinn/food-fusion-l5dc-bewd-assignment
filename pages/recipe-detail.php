@@ -241,7 +241,7 @@ $photo_src = $recipe['photo']
                     : null;
                 $rel_total = ((int)($rel['prep_time'] ?? 0)) + ((int)($rel['cook_time'] ?? 0));
             ?>
-            <a href="<?= SITE_URL ?>/pages/recipe-detail.php?id=<?= $rel['id'] ?>"
+            <a href="<?= SITE_URL ?>/pages/recipe-detail.php?id=<?= (int)$rel['id'] ?>"
                class="group bg-white border border-gray-100 rounded-2xl overflow-hidden hover:shadow-lg transition-all duration-200">
                 <div class="aspect-video overflow-hidden bg-gray-100">
                     <?php if ($rel_photo): ?>

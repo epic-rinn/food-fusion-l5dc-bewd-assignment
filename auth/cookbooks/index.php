@@ -157,18 +157,18 @@ ob_start();
                 <span class="text-xs text-gray-400"><?= date('M j, Y', strtotime($c['created_at'])) ?></span>
                 <div class="flex gap-3 items-center">
                     <?php if (is_admin() && $c['status'] !== 'approved'): ?>
-                    <a href="<?= SITE_URL ?>/auth/cookbooks/status.php?id=<?= $c['id'] ?>&status=approved"
+                    <a href="<?= SITE_URL ?>/auth/cookbooks/status.php?id=<?= (int)$c['id'] ?>&status=approved"
                        class="text-xs font-semibold text-green-500 hover:text-green-700 transition"
                        onclick="return confirm('Approve this cookbook?')">Approve</a>
                     <?php endif; ?>
                     <?php if (is_admin() && $c['status'] !== 'rejected'): ?>
-                    <a href="<?= SITE_URL ?>/auth/cookbooks/status.php?id=<?= $c['id'] ?>&status=rejected"
+                    <a href="<?= SITE_URL ?>/auth/cookbooks/status.php?id=<?= (int)$c['id'] ?>&status=rejected"
                        class="text-xs font-semibold text-yellow-500 hover:text-yellow-700 transition"
                        onclick="return confirm('Reject this cookbook?')">Reject</a>
                     <?php endif; ?>
-                    <a href="<?= SITE_URL ?>/auth/cookbooks/edit.php?id=<?= $c['id'] ?>"
+                    <a href="<?= SITE_URL ?>/auth/cookbooks/edit.php?id=<?= (int)$c['id'] ?>"
                        class="text-xs font-semibold text-blue-500 hover:text-blue-700 transition">Edit</a>
-                    <a href="<?= SITE_URL ?>/auth/cookbooks/delete.php?id=<?= $c['id'] ?>"
+                    <a href="<?= SITE_URL ?>/auth/cookbooks/delete.php?id=<?= (int)$c['id'] ?>"
                        class="text-xs font-semibold text-red-400 hover:text-red-600 transition"
                        onclick="return confirm('Delete \'<?= htmlspecialchars(addslashes($c['name'])) ?>\'?')">
                        Delete

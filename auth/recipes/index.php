@@ -119,22 +119,22 @@ ob_start();
             <!-- Meta chips -->
             <div class="flex flex-wrap gap-2 text-xs text-gray-500 mb-4">
                 <?php if ($r['prep_time']): ?>
-                <span class="bg-gray-100 rounded-full px-2.5 py-1">⏱ Prep: <?= $r['prep_time'] ?>m</span>
+                <span class="bg-gray-100 rounded-full px-2.5 py-1">⏱ Prep: <?= (int)$r['prep_time'] ?>m</span>
                 <?php endif; ?>
                 <?php if ($r['cook_time']): ?>
-                <span class="bg-gray-100 rounded-full px-2.5 py-1">🔥 Cook: <?= $r['cook_time'] ?>m</span>
+                <span class="bg-gray-100 rounded-full px-2.5 py-1">🔥 Cook: <?= (int)$r['cook_time'] ?>m</span>
                 <?php endif; ?>
                 <?php if ($r['servings']): ?>
-                <span class="bg-gray-100 rounded-full px-2.5 py-1">🍽 <?= $r['servings'] ?> servings</span>
+                <span class="bg-gray-100 rounded-full px-2.5 py-1">🍽 <?= (int)$r['servings'] ?> servings</span>
                 <?php endif; ?>
             </div>
 
             <div class="mt-auto flex items-center justify-between">
                 <span class="text-xs text-gray-400"><?= date('M j, Y', strtotime($r['created_at'])) ?></span>
                 <div class="flex gap-3">
-                    <a href="<?= SITE_URL ?>/auth/recipes/edit.php?id=<?= $r['id'] ?>"
+                    <a href="<?= SITE_URL ?>/auth/recipes/edit.php?id=<?= (int)$r['id'] ?>"
                        class="text-xs font-semibold text-blue-500 hover:text-blue-700 transition">Edit</a>
-                    <a href="<?= SITE_URL ?>/auth/recipes/delete.php?id=<?= $r['id'] ?>"
+                    <a href="<?= SITE_URL ?>/auth/recipes/delete.php?id=<?= (int)$r['id'] ?>"
                        class="text-xs font-semibold text-red-400 hover:text-red-600 transition"
                        onclick="return confirm('Delete \'<?= htmlspecialchars(addslashes($r['title'])) ?>\'?')">
                        Delete

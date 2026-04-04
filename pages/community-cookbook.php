@@ -251,7 +251,7 @@ $cookbooks = $stmt->fetchAll();
 
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
         <?php foreach ($cookbooks as $cb): ?>
-        <a href="<?= SITE_URL ?>/pages/cookbook-detail.php?id=<?= $cb['id'] ?>"
+        <a href="<?= SITE_URL ?>/pages/cookbook-detail.php?id=<?= (int)$cb['id'] ?>"
            class="group bg-white border border-gray-100 rounded-2xl overflow-hidden hover:shadow-lg transition-all duration-200 flex flex-col">
             <!-- Photo -->
             <div class="aspect-video overflow-hidden bg-gray-100">

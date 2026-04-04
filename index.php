@@ -136,7 +136,7 @@ $featured_recipes = $stmt->fetchAll();
         <?php if (!empty($featured_recipes)): ?>
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-16">
             <?php foreach ($featured_recipes as $r): ?>
-            <a href="<?= SITE_URL ?>/pages/recipe-detail.php?id=<?= $r['id'] ?>"
+            <a href="<?= SITE_URL ?>/pages/recipe-detail.php?id=<?= (int)$r['id'] ?>"
                class="bg-white border border-gray-100 rounded-2xl overflow-hidden hover:shadow-md transition group block">
                 <?php if ($r['photo']): ?>
                 <div class="overflow-hidden h-44">
@@ -161,7 +161,7 @@ $featured_recipes = $stmt->fetchAll();
                         <span>⏱ <?= (int)($r['prep_time'] + $r['cook_time']) ?> min</span>
                         <?php endif; ?>
                         <?php if ($r['servings']): ?>
-                        <span>🍽 <?= $r['servings'] ?> servings</span>
+                        <span>🍽 <?= (int)$r['servings'] ?> servings</span>
                         <?php endif; ?>
                     </div>
                 </div>

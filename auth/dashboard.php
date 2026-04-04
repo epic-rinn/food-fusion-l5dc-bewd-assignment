@@ -129,9 +129,9 @@ ob_start();
                         <?= date('M j, Y', strtotime($recipe['created_at'])) ?>
                     </td>
                     <td class="py-3 text-right">
-                        <a href="<?= SITE_URL ?>/auth/recipes/edit.php?id=<?= $recipe['id'] ?>"
+                        <a href="<?= SITE_URL ?>/auth/recipes/edit.php?id=<?= (int)$recipe['id'] ?>"
                            class="text-blue-500 hover:text-blue-700 font-medium mr-3 text-xs">Edit</a>
-                        <a href="<?= SITE_URL ?>/auth/recipes/delete.php?id=<?= $recipe['id'] ?>"
+                        <a href="<?= SITE_URL ?>/auth/recipes/delete.php?id=<?= (int)$recipe['id'] ?>"
                            class="text-red-400 hover:text-red-600 font-medium text-xs"
                            onclick="return confirm('Delete this recipe?')">Delete</a>
                     </td>

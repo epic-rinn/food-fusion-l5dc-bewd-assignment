@@ -60,7 +60,7 @@ function recipe_card(array $r): void {
         ? SITE_URL . '/uploads/recipes/' . htmlspecialchars($r['photo'])
         : null;
     ?>
-    <a href="<?= SITE_URL ?>/pages/recipe-detail.php?id=<?= $r['id'] ?>"
+    <a href="<?= SITE_URL ?>/pages/recipe-detail.php?id=<?= (int)$r['id'] ?>"
        class="group bg-white border border-gray-100 rounded-2xl overflow-hidden hover:shadow-lg transition-all duration-200 flex flex-col">
         <!-- Photo -->
         <div class="aspect-video overflow-hidden bg-gray-100">
