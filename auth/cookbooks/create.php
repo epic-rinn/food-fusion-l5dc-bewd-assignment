@@ -2,6 +2,7 @@
 require_once dirname(__DIR__, 2) . '/config.php';
 require_once dirname(__DIR__, 2) . '/db.php';
 require_once dirname(__DIR__)    . '/session.php';
+require_once dirname(__DIR__, 2) . '/includes/gemini.php';
 
 require_login();
 
@@ -90,7 +91,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             current_user()['id'],
         ]);
 
-        flash_set('success', 'Cookbook "' . $old['name'] . '" submitted for review!');
+        $cookbook_id = $pdo->lastInsertId();
+        $score = ai_score_cookbook(
+            $old['name'],
+            $old['description'],
+            $old['country'],
+            $old['cooking_type'],
+            $old['tips'] ?: null
+        );
+
+        if ($score !== null && $score >= 70) {
+            $pdo->prepare('UPDATE cookbooks SET status = ? WHERE id = ?')
+                ->execute(['approved', $cookbook_id]);
+            flash_set('success', 'Cookbook "' . $old['name'] . '" has been approved!');
+        } else {
+            flash_set('success', 'Cookbook "' . $old['name'] . '" submitted for review!');
+        }
+
         header('Location: ' . SITE_URL . '/auth/cookbooks/index.php');
         exit;
     }

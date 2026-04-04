@@ -4,6 +4,7 @@ $meta_description = 'Browse community-submitted cookbooks from around the world.
 require_once dirname(__DIR__) . '/config.php';
 require_once dirname(__DIR__) . '/db.php';
 require_once dirname(__DIR__) . '/auth/session.php';
+require_once dirname(__DIR__) . '/includes/gemini.php';
 
 // --- Lists for the submit form ---
 $form_countries = [
@@ -89,7 +90,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && is_logged_in()) {
             current_user()['id'],
         ]);
 
-        flash_set('success', 'Cookbook "' . $old['name'] . '" submitted for review!');
+        $cookbook_id = $pdo_w->lastInsertId();
+        $score = ai_score_cookbook(
+            $old['name'],
+            $old['description'],
+            $old['country'],
+            $old['cooking_type'],
+            $old['tips'] ?: null
+        );
+
+        if ($score !== null && $score >= 70) {
+            $pdo_w->prepare('UPDATE cookbooks SET status = ? WHERE id = ?')
+                   ->execute(['approved', $cookbook_id]);
+            flash_set('success', 'Cookbook "' . $old['name'] . '" has been approved!');
+        } else {
+            flash_set('success', 'Cookbook "' . $old['name'] . '" submitted for review!');
+        }
+
         header('Location: ' . SITE_URL . '/pages/community-cookbook.php');
         exit;
     }

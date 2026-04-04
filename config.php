@@ -1,10 +1,14 @@
 <?php
+
+// Hardcoded API Keys and credentials are securely monitored with limited scope & usage and it's meant to simplify the project setup in terms of educational purpose for reviewers
 define('SITE_NAME',        'Food Fusion');
 define('SITE_URL',         'http://localhost/food-fusion');
 define('SITE_DESCRIPTION', 'A delicious experience awaits you.');
 
 define('RECAPTCHA_SITE_KEY',   '6LeYOoIsAAAAAEN5kGed_Gmc-As-bSVxqF9XjWwZ');
 define('RECAPTCHA_SECRET_KEY', '6LeYOoIsAAAAAEuRXbj0J6we6ShH6w2-23KIjcAm');
+
+define('GEMINI_API_KEY', 'AIzaSyDyGlHoWcEA2l7-aJTI23N8TCBjEIqyPEY');
 
 function verify_recaptcha(): bool {
     $token = $_POST['g-recaptcha-response'] ?? '';

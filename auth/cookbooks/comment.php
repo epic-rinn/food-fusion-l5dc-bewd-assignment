@@ -2,6 +2,7 @@
 require_once dirname(__DIR__, 2) . '/config.php';
 require_once dirname(__DIR__, 2) . '/db.php';
 require_once dirname(__DIR__)    . '/session.php';
+require_once dirname(__DIR__, 2) . '/includes/gemini.php';
 
 header('Content-Type: application/json');
 
@@ -23,6 +24,13 @@ if ($cookbook_id < 1) {
 if ($comment === '') {
     http_response_code(400);
     echo json_encode(['error' => 'Comment cannot be empty']);
+    exit;
+}
+
+$moderation = ai_moderate($comment);
+if ($moderation !== null && $moderation['flagged'] === true) {
+    http_response_code(422);
+    echo json_encode(['error' => 'Your comment was flagged as inappropriate and cannot be posted.']);
     exit;
 }
 

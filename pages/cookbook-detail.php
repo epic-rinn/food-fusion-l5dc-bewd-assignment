@@ -373,7 +373,9 @@ if (commentForm) {
             return r.json();
         })
         .then(data => {
-            if (!data || !data.success) return;
+            if (!data) return;
+            if (data.error) { alert(data.error); return; }
+            if (!data.success) return;
 
             // Remove "no comments" placeholder
             const noComments = document.getElementById('no-comments');
