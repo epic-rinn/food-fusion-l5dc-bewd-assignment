@@ -1,0 +1,18 @@
+/* Custom styles that extend Tailwind */
+
+/* Smooth scrolling */
+html {
+    scroll-behavior: smooth;
+}
+
+/* Custom focus ring */
+input:focus,
+textarea:focus,
+select:focus {
+    outline: none;
+}
+
+/* Transition defaults */
+a, button {
+    transition-duration: 150ms;
+}

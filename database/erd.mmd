@@ -1,0 +1,63 @@
+erDiagram
+    users {
+        INT id PK
+        VARCHAR name
+        VARCHAR email UK
+        VARCHAR password
+        ENUM role "admin | user"
+        INT failed_attempts
+        DATETIME locked_until
+        DATETIME created_at
+    }
+
+    recipes {
+        INT id PK
+        VARCHAR title
+        TEXT description
+        VARCHAR category
+        INT prep_time "minutes"
+        INT cook_time "minutes"
+        INT servings
+        VARCHAR cooking_method
+        VARCHAR photo
+        INT created_by FK
+        DATETIME created_at
+        DATETIME updated_at
+    }
+
+    cookbooks {
+        INT id PK
+        VARCHAR name
+        TEXT description "step-by-step, one per line"
+        VARCHAR photo
+        VARCHAR country
+        VARCHAR cooking_type
+        TEXT tips
+        ENUM status "pending | approved | rejected"
+        INT total_likes
+        INT user_id FK
+        DATETIME created_at
+        DATETIME updated_at
+    }
+
+    cookbook_likes {
+        INT id PK
+        INT cookbook_id FK
+        INT user_id FK
+        DATETIME created_at
+    }
+
+    cookbook_comments {
+        INT id PK
+        INT cookbook_id FK
+        INT user_id FK
+        TEXT comment
+        DATETIME created_at
+    }
+
+    users ||--o{ recipes : "creates"
+    users ||--o{ cookbooks : "submits"
+    users ||--o{ cookbook_likes : "likes"
+    users ||--o{ cookbook_comments : "comments"
+    cookbooks ||--o{ cookbook_likes : "has"
+    cookbooks ||--o{ cookbook_comments : "has"
