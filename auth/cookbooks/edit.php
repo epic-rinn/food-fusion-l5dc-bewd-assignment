@@ -40,17 +40,7 @@ $old    = [
     'status'       => $cookbook['status'],
 ];
 
-$countries = [
-    'Philippines', 'United States', 'Japan', 'Korea', 'China', 'India', 'Thailand',
-    'Vietnam', 'Mexico', 'Italy', 'France', 'Spain', 'Greece', 'Turkey', 'Morocco',
-    'Brazil', 'United Kingdom', 'Australia', 'Germany', 'Canada',
-];
-
-$cooking_types = [
-    'Baking', 'Grilling', 'Frying', 'Steaming', 'Boiling', 'Roasting', 'Stir-fry',
-    'Slow Cooking', 'Smoking', 'Raw/No-Cook', 'Braising', 'Sauteing', 'Fermenting',
-    'Soup/Stew', 'Other',
-];
+require_once dirname(__DIR__, 2) . '/includes/cookbook_options.php';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 

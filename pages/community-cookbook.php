@@ -7,17 +7,7 @@ require_once dirname(__DIR__) . '/auth/session.php';
 require_once dirname(__DIR__) . '/includes/gemini.php';
 
 // --- Lists for the submit form ---
-$form_countries = [
-    'Philippines', 'United States', 'Japan', 'Korea', 'China', 'India', 'Thailand',
-    'Vietnam', 'Mexico', 'Italy', 'France', 'Spain', 'Greece', 'Turkey', 'Morocco',
-    'Brazil', 'United Kingdom', 'Australia', 'Germany', 'Canada',
-];
-
-$form_cooking_types = [
-    'Baking', 'Grilling', 'Frying', 'Steaming', 'Boiling', 'Roasting', 'Stir-fry',
-    'Slow Cooking', 'Smoking', 'Raw/No-Cook', 'Braising', 'Sauteing', 'Fermenting',
-    'Soup/Stew', 'Other',
-];
+require_once dirname(__DIR__) . '/includes/cookbook_options.php';
 
 // --- Handle POST: create cookbook (logged-in users only) ---
 $form_errors = [];
@@ -154,12 +144,24 @@ if ($type_filter !== '') {
 
 $where_sql = 'WHERE ' . implode(' AND ', $where);
 
+// Pagination
+$per_page = 9;
+$page     = max(1, (int)($_GET['page'] ?? 1));
+
+$count_stmt = $pdo->prepare("SELECT COUNT(*) FROM cookbooks c {$where_sql}");
+$count_stmt->execute($params);
+$total_items = (int)$count_stmt->fetchColumn();
+$total_pages = max(1, (int)ceil($total_items / $per_page));
+$page        = min($page, $total_pages);
+$offset      = ($page - 1) * $per_page;
+
 $stmt = $pdo->prepare(
     "SELECT c.*, u.name AS author_name
      FROM   cookbooks c
      JOIN   users u ON u.id = c.user_id
      {$where_sql}
-     ORDER  BY c.total_likes DESC, c.created_at DESC"
+     ORDER  BY c.total_likes DESC, c.created_at DESC
+     LIMIT  {$per_page} OFFSET {$offset}"
 );
 $stmt->execute($params);
 $cookbooks = $stmt->fetchAll();
@@ -258,8 +260,8 @@ $cookbooks = $stmt->fetchAll();
 
     <?php if ($search || $country_filter || $type_filter): ?>
     <p class="text-sm text-gray-500 mb-5">
-        Found <strong><?= count($cookbooks) ?></strong>
-        cookbook<?= count($cookbooks) !== 1 ? 's' : '' ?>
+        Found <strong><?= $total_items ?></strong>
+        cookbook<?= $total_items !== 1 ? 's' : '' ?>
         <?= $search ? 'for "<strong>' . htmlspecialchars($search) . '</strong>"' : '' ?>
         <?= $country_filter ? 'in <strong>' . htmlspecialchars($country_filter) . '</strong>' : '' ?>
         <?= $type_filter ? '· <strong>' . htmlspecialchars($type_filter) . '</strong>' : '' ?>
@@ -307,6 +309,60 @@ $cookbooks = $stmt->fetchAll();
         </a>
         <?php endforeach; ?>
     </div>
+
+    <?php if ($total_pages > 1): ?>
+    <!-- Pagination -->
+    <?php
+        $qs = [];
+        if ($search !== '')         $qs['q']       = $search;
+        if ($country_filter !== '') $qs['country'] = $country_filter;
+        if ($type_filter !== '')    $qs['type']    = $type_filter;
+        $base = SITE_URL . '/pages/community-cookbook.php';
+        $link = function(int $p) use ($base, $qs) {
+            $qs['page'] = $p;
+            return $base . '?' . http_build_query($qs);
+        };
+    ?>
+    <nav class="flex items-center justify-center gap-2 mt-10">
+        <?php if ($page > 1): ?>
+        <a href="<?= $link($page - 1) ?>"
+           class="px-4 py-2 text-sm border border-gray-200 rounded-full hover:border-orange-400 hover:text-orange-500 transition">
+            Previous
+        </a>
+        <?php endif; ?>
+
+        <?php
+        $start = max(1, $page - 2);
+        $end   = min($total_pages, $page + 2);
+        if ($start > 1): ?>
+            <a href="<?= $link(1) ?>" class="w-10 h-10 flex items-center justify-center text-sm rounded-full border border-gray-200 hover:border-orange-400 hover:text-orange-500 transition">1</a>
+            <?php if ($start > 2): ?><span class="text-gray-400 text-sm px-1">...</span><?php endif; ?>
+        <?php endif; ?>
+
+        <?php for ($i = $start; $i <= $end; $i++): ?>
+        <a href="<?= $link($i) ?>"
+           class="w-10 h-10 flex items-center justify-center text-sm rounded-full border transition
+                  <?= $i === $page
+                      ? 'bg-orange-500 text-white border-orange-500'
+                      : 'border-gray-200 hover:border-orange-400 hover:text-orange-500' ?>">
+            <?= $i ?>
+        </a>
+        <?php endfor; ?>
+
+        <?php if ($end < $total_pages): ?>
+            <?php if ($end < $total_pages - 1): ?><span class="text-gray-400 text-sm px-1">...</span><?php endif; ?>
+            <a href="<?= $link($total_pages) ?>" class="w-10 h-10 flex items-center justify-center text-sm rounded-full border border-gray-200 hover:border-orange-400 hover:text-orange-500 transition"><?= $total_pages ?></a>
+        <?php endif; ?>
+
+        <?php if ($page < $total_pages): ?>
+        <a href="<?= $link($page + 1) ?>"
+           class="px-4 py-2 text-sm border border-gray-200 rounded-full hover:border-orange-400 hover:text-orange-500 transition">
+            Next
+        </a>
+        <?php endif; ?>
+    </nav>
+    <?php endif; ?>
+
     <?php endif; ?>
 
 </div>
@@ -352,7 +408,7 @@ $cookbooks = $stmt->fetchAll();
                     <select id="modal-country" name="country"
                             class="w-full border <?= isset($form_errors['country']) ? 'border-red-400' : 'border-gray-200' ?> rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-orange-300 transition bg-white">
                         <option value="">-- Select country --</option>
-                        <?php foreach ($form_countries as $fc): ?>
+                        <?php foreach ($countries as $fc): ?>
                         <option value="<?= $fc ?>" <?= $old['country'] === $fc ? 'selected' : '' ?>><?= $fc ?></option>
                         <?php endforeach; ?>
                     </select>
@@ -365,7 +421,7 @@ $cookbooks = $stmt->fetchAll();
                     <select id="modal-cooking_type" name="cooking_type"
                             class="w-full border <?= isset($form_errors['cooking_type']) ? 'border-red-400' : 'border-gray-200' ?> rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-orange-300 transition bg-white">
                         <option value="">-- Select type --</option>
-                        <?php foreach ($form_cooking_types as $fct): ?>
+                        <?php foreach ($cooking_types as $fct): ?>
                         <option value="<?= $fct ?>" <?= $old['cooking_type'] === $fct ? 'selected' : '' ?>><?= $fct ?></option>
                         <?php endforeach; ?>
                     </select>

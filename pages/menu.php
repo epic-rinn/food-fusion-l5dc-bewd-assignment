@@ -28,22 +28,50 @@ if ($category_filter !== '') {
     $where[]  = 'r.category = ?';
     $params[] = $category_filter;
 }
-$where_sql = $where ? 'WHERE ' . implode(' AND ', $where) : '';
+$where_sql    = $where ? 'WHERE ' . implode(' AND ', $where) : '';
+$has_filters  = ($search !== '' || $category_filter !== '');
 
-$stmt = $pdo->prepare(
-    "SELECT r.id, r.title, r.description, r.category, r.photo,
-            r.prep_time, r.cook_time, r.servings
-     FROM   recipes r
-     {$where_sql}
-     ORDER  BY r.category ASC, r.created_at DESC"
-);
-$stmt->execute($params);
-$recipes = $stmt->fetchAll();
+// Pagination (only for search/filter view)
+$per_page     = 9;
+$page         = max(1, (int)($_GET['page'] ?? 1));
+$total_items  = 0;
+$total_pages  = 1;
 
-// Group by category (only used when no filter active)
-$grouped = [];
-foreach ($recipes as $r) {
-    $grouped[$r['category'] ?? 'Other'][] = $r;
+if ($has_filters) {
+    $count_stmt = $pdo->prepare("SELECT COUNT(*) FROM recipes r {$where_sql}");
+    $count_stmt->execute($params);
+    $total_items = (int)$count_stmt->fetchColumn();
+    $total_pages = max(1, (int)ceil($total_items / $per_page));
+    $page        = min($page, $total_pages);
+    $offset      = ($page - 1) * $per_page;
+
+    $stmt = $pdo->prepare(
+        "SELECT r.id, r.title, r.description, r.category, r.photo,
+                r.prep_time, r.cook_time, r.servings
+         FROM   recipes r
+         {$where_sql}
+         ORDER  BY r.category ASC, r.created_at DESC
+         LIMIT  {$per_page} OFFSET {$offset}"
+    );
+    $stmt->execute($params);
+    $recipes = $stmt->fetchAll();
+    $grouped = [];
+} else {
+    $stmt = $pdo->prepare(
+        "SELECT r.id, r.title, r.description, r.category, r.photo,
+                r.prep_time, r.cook_time, r.servings
+         FROM   recipes r
+         {$where_sql}
+         ORDER  BY r.category ASC, r.created_at DESC"
+    );
+    $stmt->execute($params);
+    $recipes = $stmt->fetchAll();
+
+    // Group by category (only used when no filter active)
+    $grouped = [];
+    foreach ($recipes as $r) {
+        $grouped[$r['category'] ?? 'Other'][] = $r;
+    }
 }
 
 function fmt_time_m(int $mins): string {
@@ -177,17 +205,69 @@ function recipe_card(array $r): void {
         </a>
     </div>
 
-    <?php elseif ($search || $category_filter): ?>
+    <?php elseif ($has_filters): ?>
     <!-- Flat grid for search/filter results -->
     <p class="text-sm text-gray-500 mb-5">
-        Found <strong><?= count($recipes) ?></strong>
-        recipe<?= count($recipes) !== 1 ? 's' : '' ?>
+        Found <strong><?= $total_items ?></strong>
+        recipe<?= $total_items !== 1 ? 's' : '' ?>
         <?= $search ? 'for "<strong>' . htmlspecialchars($search) . '</strong>"' : '' ?>
         <?= $category_filter ? 'in <strong>' . htmlspecialchars($category_filter) . '</strong>' : '' ?>
     </p>
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
         <?php foreach ($recipes as $r): recipe_card($r); endforeach; ?>
     </div>
+
+    <?php if ($total_pages > 1): ?>
+    <!-- Pagination -->
+    <?php
+        $qs = [];
+        if ($search !== '')          $qs['q']        = $search;
+        if ($category_filter !== '') $qs['category'] = $category_filter;
+        $base = SITE_URL . '/pages/menu.php';
+        $link = function(int $p) use ($base, $qs) {
+            $qs['page'] = $p;
+            return $base . '?' . http_build_query($qs);
+        };
+    ?>
+    <nav class="flex items-center justify-center gap-2 mt-10">
+        <?php if ($page > 1): ?>
+        <a href="<?= $link($page - 1) ?>"
+           class="px-4 py-2 text-sm border border-gray-200 rounded-full hover:border-orange-400 hover:text-orange-500 transition">
+            Previous
+        </a>
+        <?php endif; ?>
+
+        <?php
+        $start = max(1, $page - 2);
+        $end   = min($total_pages, $page + 2);
+        if ($start > 1): ?>
+            <a href="<?= $link(1) ?>" class="w-10 h-10 flex items-center justify-center text-sm rounded-full border border-gray-200 hover:border-orange-400 hover:text-orange-500 transition">1</a>
+            <?php if ($start > 2): ?><span class="text-gray-400 text-sm px-1">...</span><?php endif; ?>
+        <?php endif; ?>
+
+        <?php for ($i = $start; $i <= $end; $i++): ?>
+        <a href="<?= $link($i) ?>"
+           class="w-10 h-10 flex items-center justify-center text-sm rounded-full border transition
+                  <?= $i === $page
+                      ? 'bg-orange-500 text-white border-orange-500'
+                      : 'border-gray-200 hover:border-orange-400 hover:text-orange-500' ?>">
+            <?= $i ?>
+        </a>
+        <?php endfor; ?>
+
+        <?php if ($end < $total_pages): ?>
+            <?php if ($end < $total_pages - 1): ?><span class="text-gray-400 text-sm px-1">...</span><?php endif; ?>
+            <a href="<?= $link($total_pages) ?>" class="w-10 h-10 flex items-center justify-center text-sm rounded-full border border-gray-200 hover:border-orange-400 hover:text-orange-500 transition"><?= $total_pages ?></a>
+        <?php endif; ?>
+
+        <?php if ($page < $total_pages): ?>
+        <a href="<?= $link($page + 1) ?>"
+           class="px-4 py-2 text-sm border border-gray-200 rounded-full hover:border-orange-400 hover:text-orange-500 transition">
+            Next
+        </a>
+        <?php endif; ?>
+    </nav>
+    <?php endif; ?>
 
     <?php else: ?>
     <!-- Grouped by category -->
